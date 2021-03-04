@@ -1,4 +1,4 @@
-import  {useState, useEffect} from 'react';
+import  {useState, useEffect, SyntheticEvent} from 'react';
 import { Transition } from '@headlessui/react';
 import './App.css';
 import Card from './components/Card';
@@ -42,10 +42,7 @@ function App() {
   const[leaveTransition, setLeaveTransition] = useState("")
   const [isShowing, setIsShowing] = useState<boolean>(true);
   //const [prevQuestion, setPrevCurrentQuestion] = useState(0);
-  useEffect(() => {
-    setQuestions([...questions])
-   
-  }, [currentQuestion])
+
   const handleAnswerOptionClick = (choice:any, index:number)=>{
     let newquestions = questions;
     let res =  newquestions.splice(currentQuestion, 1);
@@ -56,6 +53,14 @@ function App() {
      newquestions.splice(currentQuestion, 0, res[0]);
 
     setQuestions(newquestions)
+  }
+  const handleChange = (e:SyntheticEvent)=>{
+     let newquestions = questions;
+     console.log(e);
+    let res =  newquestions.splice(currentQuestion, 1);
+    //@ts-ignore
+
+     newquestions.splice(currentQuestion, 0, {...res[0], answer: e.target.value});
   }
   const handleNextClick = (choice:any) => {
     setSelectedAnswer(null);
@@ -118,14 +123,18 @@ setSelectedAnswer(null);
 <div className="bg-white shadow overflow-hidden rounded p-4 h-1/2 w-1/2">
 <h2 className="text-grey-900 text-2xl font-md mb-8 my-4 text-center">{questions[currentQuestion].headline}</h2>
 {questions[currentQuestion].question_type === "text" ? (
-  <textarea className="rounded shadow p-2 w-full my-2 border" rows={4} cols={4} ></textarea>
+  //@ts-ignore
+  <textarea value={questions[currentQuestion]?.answer} onChange={handleChange} className="rounded shadow p-2 w-full my-2 border" rows={4} cols={4} ></textarea>
 ) :(
 <div className='flex flex-col items-center justify-center'>
 						{questions[currentQuestion].choices?.map((choice,index) =>(
               <button key={choice.label} onClick={(e) =>{
                 setSelectedAnswer(index);
                 handleAnswerOptionClick(choice, index);
-              }} className={`shadow w-11/12 text-white ${choice.selected || selectedAnswer === index  ?  "bg-green-600 bg-opacity-80" : "bg-indigo-600 bg-opacity-80"}      px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-10 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 m-1`}>{choice.label}</button>
+              }} className={` flex justify-center items-center relative transition duration-150 shadow w-11/12 text-white ${choice.selected || selectedAnswer === index  ?  "bg-transparent border-3 border-indigo-800 text-indigo-900" : "bg-indigo-600 bg-opacity-80 text-white"}      px-8 py-3 border border-transparent text-base font-medium rounded-md  bg-indigo-10 hover:text-indigo-900 hover:bg-transparent hover:border-indigo-800 hover:border-3 hover:text-indigo-900 md:py-4 md:text-lg md:px-10 m-1`}>{choice.label}
+              {choice.selected || selectedAnswer === index ? <svg xmlns="http://www.w3.org/2000/svg" className="h-8 absolute right-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+</svg> : null }  </button>
 
 
             ))}
@@ -136,11 +145,15 @@ setSelectedAnswer(null);
 </div >
 
 <div className="flex items-center justify-between my-3  w-1/2">
-  <button disabled={currentQuestion <= 0 ? true: false} className="   px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
+  <button disabled={currentQuestion <= 0 ? true: false} className="flex justify-center uppercase items-center  disabled:opacity-50 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
     handlePrevClick(questions[currentQuestion].choices)
-  }}>Previous Question</button><button disabled={currentQuestion >= questions.length ? true: false}  className="   px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
+  }}> <svg xmlns="http://www.w3.org/2000/svg" className="h-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+</svg> Previous question</button><button disabled={currentQuestion >= questions.length-1 ? true: false}  className=" flex justify-center uppercase items-center disabled:opacity-50 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
     handleNextClick(questions[currentQuestion].choices)
-  }}>Next Question</button>
+  }}>next question <svg xmlns="http://www.w3.org/2000/svg" className="h-5 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+</svg></button>
 </div>
 </Transition>
 
