@@ -6,7 +6,8 @@ import Card from './components/Card';
 
 import Navbar from './components/Navbar';
 import questionnaire from './data/questionnaire.json';
-console.log(questionnaire.questionnaire.questions)
+
+let {questionnaire:{name,description}} = questionnaire
 let questionsList = questionnaire.questionnaire.questions;
 
 // type Question = {
@@ -38,6 +39,7 @@ function App() {
   const [questions, setQuestions] = useState([...questionsList]);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const[leaveTransition, setLeaveTransition] = useState("")
   const [isShowing, setIsShowing] = useState<boolean>(true);
   //const [prevQuestion, setPrevCurrentQuestion] = useState(0);
   useEffect(() => {
@@ -48,28 +50,26 @@ function App() {
     let newquestions = questions;
     let res =  newquestions.splice(currentQuestion, 1);
     //@ts-ignore
-    //res[0]?.choices?[index].selected = true;
-    //@ts-ignore
     res[0].choices.forEach(function(item){
       item.label === choice.label ? item.selected = true : item.selected = false
     }) 
      newquestions.splice(currentQuestion, 0, res[0]);
-    //console.log(question,res[0],newQues);
-    //return;s
-   // setSelectedAnswer(null);
+
     setQuestions(newquestions)
   }
   const handleNextClick = (choice:any) => {
     setSelectedAnswer(null);
+    setLeaveTransition("translate-x-full");
+    
   
 		const nextQuestion = currentQuestion + 1;
     if(questions.length > 0){
 	if (nextQuestion < questions.length) {
-       setIsShowing(false);
+    setIsShowing(false);
     setTimeout(() => {
       	setCurrentQuestion(nextQuestion);
       setIsShowing(true);
-    }, 500);
+    }, 600);
 		
 		}
     }
@@ -77,15 +77,16 @@ function App() {
 	};
     const handlePrevClick = (choice:any) => {
 setSelectedAnswer(null);
- 
+ setLeaveTransition("-translate-x-full");
 		const nextQuestion = currentQuestion - 1;
     if(questions.length > 0){
 	if (nextQuestion < questions.length) {
+    setCurrentQuestion(nextQuestion);
      setIsShowing(false);
     setTimeout(() => {
-      	setCurrentQuestion(nextQuestion);
+      	
       setIsShowing(true);
-    },500);
+    },600);
 		
 		}
     }
@@ -95,33 +96,36 @@ setSelectedAnswer(null);
     <div className="md:container md:mx-auto ">
      
 <div className="flex flex-col items-center justify-center ">
-  <h1 className="text-center text-white text-2xl p-4">Quiz App</h1>
+  <h1 className="text-center text-white text-2xl p-4 my-3">{name}</h1>
+  <p className="font-md ">{description}</p>
    <Transition
       appear={true}
       show={isShowing}
-      enter="transition-opacity duration-300"
-      enterFrom="opacity-0"
-      enterTo="opacity-100"
-      leave="transition-opacity duration-300"
-      leaveFrom="opacity-100"
-      leaveTo="opacity-0"
-      className="flex items-center justify-center w-full"
+      // enter="transition-opacity duration-300"
+      // enterFrom="opacity-0"
+      // enterTo="opacity-100"
+      // leave="transition-opacity duration-300"
+      // leaveFrom="opacity-100"
+      // leaveTo="opacity-0"
+       enter="transition opacity ease-in-out  duration-300 transform"
+        enterFrom="-translate-x-full opacity-0 animate-bounce"
+        enterTo=" opacity-100"
+        leave="transition ease-in-out duration-300 transform"
+        leaveFrom="translate-x-0"
+        leaveTo={leaveTransition}
+      className="flex items-center justify-center w-full flex-col"
     >
 <div className="bg-white shadow overflow-hidden rounded p-4 h-1/2 w-1/2">
-<h2 className="text-grey-900 text-lg text-center">{questions[currentQuestion].headline}</h2>
+<h2 className="text-grey-900 text-2xl font-md mb-8 my-4 text-center">{questions[currentQuestion].headline}</h2>
 {questions[currentQuestion].question_type === "text" ? (
   <textarea className="rounded shadow p-2 w-full my-2 border" rows={4} cols={4} ></textarea>
-
 ) :(
 <div className='flex flex-col items-center justify-center'>
 						{questions[currentQuestion].choices?.map((choice,index) =>(
               <button key={choice.label} onClick={(e) =>{
                 setSelectedAnswer(index);
-                // let element = e.target as HTMLElement;
-                // element.classList.remove("bg-indigo-600")
-                // element.classList.toggle('bg-green-600');
                 handleAnswerOptionClick(choice, index);
-              }} className={`shadow w-11/12 text-white ${choice.selected || selectedAnswer === index  ?  "bg-green-600 bg-opacity-80" : "bg-indigo-600 bg-opacity-80"}   rounded p-2 m-1`}>{choice.label}</button>
+              }} className={`shadow w-11/12 text-white ${choice.selected || selectedAnswer === index  ?  "bg-green-600 bg-opacity-80" : "bg-indigo-600 bg-opacity-80"}      px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-10 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 m-1`}>{choice.label}</button>
 
 
             ))}
@@ -132,9 +136,9 @@ setSelectedAnswer(null);
 </div >
 
 <div className="flex items-center justify-between my-3  w-1/2">
-  <button className="p-4 rounded font-xl  bg-white" onClick={()=>{
+  <button disabled={currentQuestion <= 0 ? true: false} className="   px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
     handlePrevClick(questions[currentQuestion].choices)
-  }}>Previous Question</button><button className="p-4 rounded  bg-white font-xl" onClick={()=>{
+  }}>Previous Question</button><button disabled={currentQuestion >= questions.length ? true: false}  className="   px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10" onClick={()=>{
     handleNextClick(questions[currentQuestion].choices)
   }}>Next Question</button>
 </div>
