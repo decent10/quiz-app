@@ -1,6 +1,6 @@
 # Getting Started with Quiz App
 
-
+A simple Quiz app with multiple choice and text field options
 
 ## Available Scripts
 
