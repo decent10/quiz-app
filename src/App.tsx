@@ -1,39 +1,15 @@
-import { useState, ReactNode } from "react";
+import React, { useState } from "react";
 import { Transition } from "@headlessui/react";
 
 import questionnaire from "./data/questionnaire.json";
 import Button from "./components/shared/Button";
+import QuestionItem from "./components/Question";
+
+import { Choice, Question } from "./type";
 
 let {
   questionnaire: { name, description, questions: questionsList },
 } = questionnaire;
-type Choice = {
-  label?: string;
-  value?: string;
-  selected?: boolean;
-};
-type Question = {
-  question_type: string;
-  identifier: string;
-  answer?: string;
-  headline: string;
-  description?: string | null;
-  required?: boolean;
-  multiple?: string | undefined;
-  choices?: {
-    label?: string;
-    value?: string;
-    selected?: boolean;
-  }[];
-  jumps?: {
-    conditions?: {
-      field: string;
-      value?: string;
-    }[];
-    destination?: { id?: string };
-  }[];
-  multiline?: string | undefined;
-};
 
 function App() {
   const [questions, setQuestions] = useState<Question[]>([...questionsList]);
@@ -42,7 +18,7 @@ function App() {
   const [leaveTransition, setLeaveTransition] = useState<string>("");
   const [isShowing, setIsShowing] = useState<boolean>(true);
 
-  const handleAnswerOptionClick = (choice: Choice) => {
+  const handleAnswerOptionClick = (choice: Choice): void => {
     let newQuestions = questions;
     let selectedQuestion: Question = newQuestions.splice(currentQuestion, 1)[0];
     selectedQuestion.choices?.forEach(function (item) {
@@ -54,64 +30,18 @@ function App() {
 
     setQuestions(newQuestions);
   };
-  const handleChange = (e: any) => {
-    console.log(e);
+  const handleChange = (e: React.SyntheticEvent<HTMLTextAreaElement>): void => {
+    let ele = e.target as HTMLInputElement;
     let newQuestions = questions;
     let selectedQuestion = newQuestions.splice(currentQuestion, 1)[0];
     newQuestions.splice(currentQuestion, 0, {
       ...selectedQuestion,
-      answer: e.target.value,
+      answer: ele.value,
     });
     setQuestions(newQuestions);
   };
-  const renderQuestionOptions = (questionType: string): ReactNode => {
-    return questionType === "text" ? (
-      <textarea
-        value={questions[currentQuestion]?.answer}
-        onChange={handleChange}
-        className="rounded shadow p-2 w-full my-2 border"
-        rows={4}
-        cols={4}
-      ></textarea>
-    ) : (
-      <div className="flex flex-col items-center justify-center">
-        {questions[currentQuestion].choices?.map((choice, index) => (
-          <Button
-            key={choice.label}
-            onClick={() => {
-              setSelectedAnswer(index);
-              handleAnswerOptionClick(choice);
-            }}
-            className={` flex justify-center items-center relative transition duration-150 shadow w-11/12 text-white ${
-              choice.selected || selectedAnswer === index
-                ? "bg-transparent border-3 border-indigo-800 text-indigo-900"
-                : "bg-indigo-600 bg-opacity-80 text-white"
-            }      px-8 py-3 border border-transparent text-base font-medium rounded-md  bg-indigo-10 hover:text-indigo-900 hover:bg-transparent hover:border-indigo-800 hover:border-3 hover:text-indigo-900 md:py-4 md:text-lg md:px-10 m-1`}
-          >
-            {choice.label}
-            {choice.selected || selectedAnswer === index ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 absolute inline right-10"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            ) : null}{" "}
-          </Button>
-        ))}
-      </div>
-    );
-  };
   const handleNextClick = () => {
-    setSelectedAnswer(null);
+    //setSelectedAnswer(null);
     setLeaveTransition("translate-x-full");
     const nextQuestion = currentQuestion + 1;
     if (questions.length > 0) {
@@ -125,7 +55,7 @@ function App() {
     }
   };
   const handlePrevClick = () => {
-    setSelectedAnswer(null);
+    //setSelectedAnswer(null);
     setLeaveTransition("-translate-x-full");
     const nextQuestion = currentQuestion - 1;
     if (questions.length > 0) {
@@ -158,12 +88,13 @@ function App() {
           leaveTo={leaveTransition}
           className="flex items-center justify-center w-full flex-col"
         >
-          <div className="bg-white shadow overflow-hidden rounded p-4 h-1/2 w-full md:w-8/12 lg:w-8/12">
-            <h2 className="text-grey-900 text-2xl font-md mb-8 my-4 text-center">
-              {questions[currentQuestion].headline}
-            </h2>
-            {renderQuestionOptions(questions[currentQuestion].question_type)}
-          </div>
+          <QuestionItem
+            item={questions[currentQuestion]}
+            onAnswer={(choice) => {
+              handleAnswerOptionClick(choice);
+            }}
+            onChange={handleChange}
+          />
           <div className="flex  md:flex-row lg:flex-row sm:my-2 items-center justify-between my-3  w-full md:w-8/12 lg:w-8/12">
             <Button
               className="flex justify-center uppercase items-center  disabled:opacity-50 px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
